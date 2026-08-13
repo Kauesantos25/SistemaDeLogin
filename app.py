@@ -1,15 +1,12 @@
-# importar biblioteca tkinter
+# Importar a biblioteca tkinter
 import customtkinter as ctk
 from tkinter import *
 from tkinter import messagebox
 
-
-# imporat SQlite3
+# Importar o SQlite3
 import sqlite3
 
-
-
-
+# Criando o banco de dados
 class BackEnd ():
     def conecta_db(self):
         self.conn = sqlite3.connect("Sistema_cadastros.db")
@@ -51,7 +48,7 @@ class BackEnd ():
                                      self.confirma_senha_cadastro ))
 
         try:
-            if  (self.username_cadastro == "" or self.email_cadastro == "" or self.senha_cadastr0 == "" or self.confirma_senha_cadastro == ""):
+            if  (self.username_cadastro == "" or self.email_cadastro == "" or self.senha_cadastro == "" or self.confirma_senha_cadastro == ""):
                 messagebox.showerror(title = "Sistema de login", message= "ERRO! Por favor, preencha todos os campos!")
             elif (len(self.username_cadastro ) < 4):
                 messagebox.showwarning (title="Sistema de login", message = "O nome de usuário deve ser de pelo menos 4 caracteres!")
@@ -62,11 +59,37 @@ class BackEnd ():
             else:
                 self.conn.commit()
                 messagebox.showinfo(title ="Sistema de login", message = f"Parabéns {self.username_cadastro}\nOs seus dados foram cadastrados com sucesso! ")
+            self.desconecta_db()
+            self.limpar_entry_cadastro()
         except:
             messagebox.showerror(title= "Sistema de login", message = "Erro no processamento do seu cadastro!\n Por favor, tente novamente!")
+            self.desconecta_db()
 
 
+    def verifica_login(self):
+        self.username_login = self.username_login_entry.get()
+        self.senha_login = self.senha_login_entry.get()
 
+        self.conecta_db()
+
+        self.cursor.execute('''                
+            SELECT * FROM Usuarios
+            WHERE (Username =? AND Senha =?) ''', 
+            (self.username_login, self.senha_login)) # Verifica se o username e senha correspondem no Banco de dados
+
+        self.verifica_dados = self.cursor.fetchone() # Percorre a tabela usuário e verifica se o usuário a senha estão corretos 
+        try:
+            if (self.username_login == "" or self.senha_login == ""):
+                messagebox.showwarning(title = "Sistem de Login", message = "Por favor preencha todos os campos!")
+                
+            elif (self.username_login in self.verifica_dados and self.senha_login in self.verifica_dados):
+                messagebox.showinfo(title = "Sistema de Login", message = f"Parabéns{self.username_login}\nLogin feito com sucesso!")
+                self.desconecta_db()
+                self.limpa_entry_login()
+
+        except:
+            messagebox.showerror(title ="Sistema de Login", message = "ERRO!!!\nDados não encontrados no sistema.\nPor favor, verifique os seus dados ou cadastre-se em nosso sistema!")
+            self.desconecta_db()
 
 # Chamar a classe ctk.CTk para criar a janela principal
 class App (ctk.CTk, BackEnd): # chama a tela do tkinter dentro da classe App
@@ -75,6 +98,7 @@ class App (ctk.CTk, BackEnd): # chama a tela do tkinter dentro da classe App
         self.configuracoes_da_janela_inicial() # chama a função configuracoes_da_janela_inicial
         self.tela_de_login() # chama a função tela_de_login
         self.cria_tabela() # chama a função de criar tabela
+        
         
 
     #Configurações da janela principal
@@ -118,12 +142,12 @@ class App (ctk.CTk, BackEnd): # chama a tela do tkinter dentro da classe App
         self.senha_login_entry.grid(row=2, column=0, padx=10, pady=10) # define a posição do entry da senha na tela
 
         # Criando o checkbox para ver a senha   
-        self.ver_senha = ctk.CTkCheckBox (self.frame_login, text="Clique para ver a senha", font =("Century Gothic bold", 12), corner_radius =20) # cria um checkbox para ver a senha
+        self.ver_senha = ctk.CTkCheckBox (self.frame_login, text="Clique para ver a senha", font =("Century Gothic bold", 12), corner_radius =20, command=self.mostrar_senha_login) # cria um checkbox para ver a senha
         self.ver_senha.grid(row=3, column=0, padx=10, pady=10) # define a posição do checkbox na tela
 
         # Criando o botão de login
         self.btn_login_entry = ctk.CTkButton (self.frame_login, text="Fazer Login".upper(), font =
-        ("Century Gothic bold", 14), corner_radius =15) # cria um botão para o login
+        ("Century Gothic bold", 14), corner_radius =15, command = self.verifica_login) # cria um botão para o login
         self.btn_login_entry.grid(row=4, column=0, padx=10, pady=10) # define a posição do botão na tela
 
         # Criando o label para o texto de cadastro
@@ -174,7 +198,7 @@ class App (ctk.CTk, BackEnd): # chama a tela do tkinter dentro da classe App
 
         # Criando o checkbox para ver a senha   
         self.ver_senha = ctk.CTkCheckBox (self.frame_cadastro, text="Clique para ver a senha", font =
-        ("Century Gothic bold", 12), corner_radius =20) # cria um checkbox para ver a senha
+        ("Century Gothic bold", 12), corner_radius =20, command=self.mostrar_senha_cadastro) # cria um checkbox para ver a senha
         self.ver_senha.grid(row=5, column=0, pady=10) # define a posição do checkbox na tela
 
 
@@ -200,11 +224,26 @@ class App (ctk.CTk, BackEnd): # chama a tela do tkinter dentro da classe App
         self.username_login_entry.delete(0 , END)
         self.senha_login_entry.delete(0, END)
 
+    def mostrar_senha_login(self):
+        if self.ver_senha.get():
+            self.senha_login_entry.configure(show="")
+        else:
+            self.senha_login_entry.configure(show="*")
+
+
+    def mostrar_senha_cadastro(self):
+        if self.ver_senha.get():
+            self.senha_cadastro_entry.configure(show="")
+            self.confirma_senha_entry.configure(show="")
+        else:
+            self.senha_cadastro_entry.configure(show="*")
+            self.confirma_senha_entry.configure(show="*")
+
+
+
+
+
         
-    
-
-
-
 if __name__ == "__main__": # se o arquivo for chamado diretamente, a função main será executada
     app = App() # cria uma instância da classe App
     app.mainloop() # chama o método mainloop da classe App para iniciar a aplicação     
