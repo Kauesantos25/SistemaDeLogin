@@ -142,18 +142,14 @@ class BackEnd():
                 # Campos vazios
                 messagebox.showwarning(title = "Sistem de Login", message = "Por favor preencha todos os campos!")
 
-        elif (self.username_login in self.verifica_dados and self.senha_login in self.verifica_dados):
-                # ATENÇÃO (ponto de estudo/possível bug):
-                # 1) Se "verifica_dados" for None (usuário não encontrado),
-                #    "in None" gera um TypeError, pois não é possível usar
-                #    "in" em um objeto None. Isso quebraria o programa antes
-                #    mesmo de cair no "else" abaixo.
-                # 2) Usar "in" em uma tupla verifica se o valor existe em
-                #    QUALQUER posição da tupla (id, username, email, senha,
-                #    confirma_senha). Isso é menos seguro/preciso do que
-                #    comparar diretamente verifica_dados[1] == username e
-                #    verifica_dados[3] == senha, por exemplo.
-                messagebox.showinfo(title = "Sistema de Login", message = f"Parabéns{self.username_login}\nLogin feito com sucesso!")
+        elif (self.verifica_dados and self.username_login in self.verifica_dados and self.senha_login in self.verifica_dados):
+                # CORRIGIDO: Agora verifica se verifica_dados não é None antes de usar 'in'
+                # Uso de "in" em uma tupla verifica se o valor existe em
+                # QUALQUER posição da tupla (id, username, email, senha,
+                # confirma_senha). Isso é menos seguro/preciso do que
+                # comparar diretamente verifica_dados[1] == username e
+                # verifica_dados[3] == senha, por exemplo.
+                messagebox.showinfo(title = "Sistema de Login", message = f"Parabéns {self.username_login}\nLogin feito com sucesso!")
                 self.limpar_entry_login()
                 self.desconecta_db()
 
